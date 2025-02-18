@@ -26,9 +26,14 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -2f; // Resetear la velocidad vertical si está en el suelo
         }
 
-        // Obtener las entradas del teclado
-        float moveX = Input.GetAxis("Horizontal"); // A/D o flechas izquierda/derecha
-        float moveZ = Input.GetAxis("Vertical");   // W/S o flechas arriba/abajo
+        // Obtener las entradas del teclado SOLO para WASD
+        float moveX = 0f;
+        float moveZ = 0f;
+
+        if (Input.GetKey(KeyCode.A)) moveX = -1f;
+        if (Input.GetKey(KeyCode.D)) moveX = 1f;
+        if (Input.GetKey(KeyCode.W)) moveZ = 1f;
+        if (Input.GetKey(KeyCode.S)) moveZ = -1f;
 
         // Determinar velocidad (sprint o caminar)
         float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : speed;
@@ -37,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = transform.right * moveX + transform.forward * moveZ;
 
         // Aplicar movimiento
-        controller.Move(move * currentSpeed * Time.deltaTime);
+        controller.Move(move.normalized * currentSpeed * Time.deltaTime);
 
         // Salto
         if (isGrounded && Input.GetButtonDown("Jump")) // "Jump" está mapeado a la barra espaciadora por defecto
