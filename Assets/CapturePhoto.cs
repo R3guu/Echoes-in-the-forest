@@ -14,6 +14,9 @@ public class CapturePhoto : MonoBehaviour
     private int currentPhotoIndex = 0; // Índice de la foto actual
     private bool isAlbumMode = false; // Indica si estamos en modo álbum o modo cámara
 
+    public float detectionRange = 50f; // Rango de detección para el raycast
+    private bool gallinaDetectedThisFrame = false; // Flag para saber si la gallina ha sido detectada en este frame
+
     void Start()
     {
         // Crear un directorio para las fotos si no existe
@@ -40,8 +43,11 @@ public class CapturePhoto : MonoBehaviour
             // En modo cámara, permitir tomar fotos
             if (Input.GetMouseButtonDown(0))
             {
-                StartCoroutine(TakeScreenshot());
+                StartCoroutine(TakeScreenshot()); // Tomar la foto sin importar si la gallina está o no
             }
+
+            // Verificar si la gallina está en el campo de visión antes de tomar la foto
+            DetectGallina();
         }
         else
         {
@@ -64,8 +70,32 @@ public class CapturePhoto : MonoBehaviour
         // Mostrar u ocultar la cámara y el visor según el modo
         camera.SetActive(!albumMode);  // Activar/desactivar la cámara
         visor.SetActive(albumMode);    // Activar/desactivar el visor (álbum)
+    }
 
-        Debug.Log("Modo cambiado. Cámara activo: " + !albumMode + ", Visor activo: " + albumMode);
+    private void DetectGallina()
+    {
+        // Realizar un raycast desde la cámara en la dirección que está mirando
+        RaycastHit hit;
+        // Creamos el rayo desde el centro de la pantalla
+        Ray ray = photoCamera.ScreenPointToRay(new Vector3(photoCamera.pixelWidth / 2, photoCamera.pixelHeight / 2, 0));
+
+        // Comprobar si el rayo impacta con un objeto
+        if (Physics.Raycast(ray, out hit, detectionRange))
+        {
+            // Verificar si el objeto impactado tiene la etiqueta "Gallina"
+            if (hit.collider.CompareTag("Gallina"))
+            {
+                gallinaDetectedThisFrame = true; // Marcar que la gallina fue detectada
+            }
+            else
+            {
+                gallinaDetectedThisFrame = false; // Si no es la gallina, marcar que no se ha detectado
+            }
+        }
+        else
+        {
+            gallinaDetectedThisFrame = false; // Si no se detecta nada, marcar que no se ha detectado
+        }
     }
 
     private IEnumerator TakeScreenshot()
@@ -101,6 +131,12 @@ public class CapturePhoto : MonoBehaviour
         // Esperar un momento para asegurarse de que se guarda y actualizar el plano
         yield return new WaitForSeconds(0.5f);
         UpdatePhotoPlane(photoPath);
+
+        // Si la gallina fue detectada en este frame, mostrar el mensaje
+        if (gallinaDetectedThisFrame)
+        {
+            Debug.Log("¡La gallina apareció en la foto!");
+        }
     }
 
     private void UpdatePhotoPlane(string photoPath)
