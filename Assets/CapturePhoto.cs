@@ -13,12 +13,14 @@ public class CapturePhoto : MonoBehaviour
     private List<string> photoPaths = new List<string>(); // Lista de rutas de las fotos
     private int currentPhotoIndex = 0; // Índice de la foto actual
     private bool isAlbumMode = false; // Indica si estamos en modo álbum o modo cámara
+    private MissionGallina missionGallina;
 
     public float detectionRange = 50f; // Rango de detección para el raycast
     private bool gallinaDetectedThisFrame = false; // Flag para saber si la gallina ha sido detectada en este frame
 
     void Start()
     {
+        missionGallina = FindObjectOfType<MissionGallina>();
         // Crear un directorio para las fotos si no existe
         directoryPath = Path.Combine(Application.persistentDataPath, "Screenshots");
         if (!Directory.Exists(directoryPath))
@@ -86,6 +88,7 @@ public class CapturePhoto : MonoBehaviour
             if (hit.collider.CompareTag("Gallina"))
             {
                 gallinaDetectedThisFrame = true; // Marcar que la gallina fue detectada
+
             }
             else
             {
@@ -136,6 +139,7 @@ public class CapturePhoto : MonoBehaviour
         if (gallinaDetectedThisFrame)
         {
             Debug.Log("¡La gallina apareció en la foto!");
+            missionGallina?.GallinaPhotoCaptured(); // Notificar a la misión
         }
     }
 
