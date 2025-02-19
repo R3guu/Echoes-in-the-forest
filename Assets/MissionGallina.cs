@@ -28,7 +28,7 @@ public class MissionGallina : MonoBehaviour
             }
             else if (gallinaPhotoTaken && !canDeliverPhoto)
             {
-                missionText.text = "¡Vuelve a la furgoneta para entregar la foto!";
+                // No mostrar este mensaje nuevamente para evitar confusión
             }
             else if (canDeliverPhoto)
             {
@@ -51,6 +51,15 @@ public class MissionGallina : MonoBehaviour
         {
             gallinaPhotoTaken = true;
             missionText.text = "¡Foto tomada! Vuelve a la furgoneta para entregarla.";
+        }
+    }
+
+    void OnTriggerEnterFurgoneta(Collider other)
+    {
+        if (other.CompareTag("Player") && gallinaPhotoTaken)
+        {
+            canDeliverPhoto = true;
+            missionText.text = "Pulsa T para entregar la foto.";
         }
     }
 
