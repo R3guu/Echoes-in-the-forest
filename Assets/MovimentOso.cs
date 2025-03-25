@@ -11,28 +11,29 @@ public class MovimentOso : MonoBehaviour
     public float grado;
     public Rigidbody rb;
     public float velocidad = 1f;
-    public float velocidadPersecucion = 3f; // Velocidad cuando persigue al jugador
+    public float velocidadPersecucion = 3f;
     public float distanciaSuelo = 0.5f;
 
-    public Transform jugador; // Referencia al jugador
-    public float rangoDeteccion = 10f; // Rango en el que el oso detecta al jugador
+    public Transform jugador;
+    public float rangoDeteccion = 10f;
     private bool persiguiendo = false;
+    private bool atacando = false;
 
     void Start()
     {
         ani = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;
-        jugador = GameObject.FindGameObjectWithTag("Player").transform; // Asegúrate de que el jugador tenga la etiqueta "Player"
+        jugador = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
     public void Comportamiento_Enemigo()
     {
-        if (jugador == null) return;
+        if (jugador == null || atacando) return; // No hacer nada si está atacando
 
         float distanciaJugador = Vector3.Distance(transform.position, jugador.position);
 
-        if (distanciaJugador <= rangoDeteccion) // Si el jugador está dentro del área de detección
+        if (distanciaJugador <= rangoDeteccion)
         {
             PersigueJugador();
         }
@@ -40,7 +41,7 @@ public class MovimentOso : MonoBehaviour
         {
             persiguiendo = false;
             ani.SetBool("Run Forward", false);
-            velocidad = 1f; // Regresar a la velocidad normal
+            velocidad = 1f;
             Patrullar();
         }
     }
@@ -102,6 +103,32 @@ public class MovimentOso : MonoBehaviour
                 ani.SetBool("Idle", false);
                 break;
         }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player") && !atacando)
+        {
+            StartCoroutine(AtacarJugador(other.gameObject));
+        }
+    }
+
+    IEnumerator AtacarJugador(GameObject player)
+    {
+        atacando = true;
+        ani.SetBool("Run Forward", false);
+
+        int ataqueAleatorio = Random.Range(1, 9); // Entre 1 y 8
+        ani.SetTrigger("Attack" + ataqueAleatorio);
+
+        yield return new WaitForSeconds(1.5f); // Tiempo de la animación
+
+        if (player != null) // Verificar si el jugador sigue vivo
+        {
+            player.GetComponent<PlayerMovement>().MatarJugador(); // Llamar la función de muerte del jugador
+        }
+
+        atacando = false;
     }
 
     void Update()

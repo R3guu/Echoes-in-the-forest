@@ -10,23 +10,28 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Vector3 velocity;
     private bool isGrounded;
+    private bool muerto = false;
+
+    public GameObject gameOverCanvas; // Asigna el Canvas GameOver en el Inspector
 
     void Start()
     {
-        // Obtener el componente CharacterController
         controller = GetComponent<CharacterController>();
+        gameOverCanvas.SetActive(false); // Asegurarse de que el Canvas está desactivado al iniciar
     }
 
     void Update()
     {
+        if (muerto) return; // Si está muerto, no puede moverse
+
         // Comprobar si está tocando el suelo
         isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0)
         {
-            velocity.y = -2f; // Resetear la velocidad vertical si está en el suelo
+            velocity.y = -2f;
         }
 
-        // Obtener las entradas del teclado SOLO para WASD
+        // Movimiento con WASD
         float moveX = 0f;
         float moveZ = 0f;
 
@@ -38,14 +43,14 @@ public class PlayerMovement : MonoBehaviour
         // Determinar velocidad (sprint o caminar)
         float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : speed;
 
-        // Calcular el movimiento en función del jugador
+        // Calcular el movimiento
         Vector3 move = transform.right * moveX + transform.forward * moveZ;
 
         // Aplicar movimiento
         controller.Move(move.normalized * currentSpeed * Time.deltaTime);
 
         // Salto
-        if (isGrounded && Input.GetButtonDown("Jump")) // "Jump" está mapeado a la barra espaciadora por defecto
+        if (isGrounded && Input.GetButtonDown("Jump"))
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
@@ -53,5 +58,16 @@ public class PlayerMovement : MonoBehaviour
         // Aplicar gravedad
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    public void MatarJugador()
+    {
+        if (muerto) return; // Evitar que se ejecute varias veces
+
+        muerto = true;
+        gameOverCanvas.SetActive(true); // Activar pantalla de Game Over
+        Time.timeScale = 0f; // Pausar el juego
+
+        Debug.Log("¡Has muerto! Game Over.");
     }
 }
