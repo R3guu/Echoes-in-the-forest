@@ -125,7 +125,7 @@ public class MovimentOso : MonoBehaviour
 
         if (player != null) // Verificar si el jugador sigue vivo
         {
-            player.GetComponent<PlayerMovement>().MatarJugador(); // Llamar la función de muerte del jugador
+            player.GetComponent<Controller>().MatarJugador(); // Llamar la función de muerte del jugador
         }
 
         atacando = false;
