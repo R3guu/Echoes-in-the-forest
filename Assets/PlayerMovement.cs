@@ -15,18 +15,21 @@ public class PlayerMovement : MonoBehaviour
     private bool muerto = false;
 
     public GameObject gameOverCanvas; // Asigna el Canvas GameOver en el Inspector
+    public GameObject cameraScript; // Referencia al script de la cámara/fotografía
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        gameOverCanvas.SetActive(false); // Asegurarse de que el Canvas est� desactivado al iniciar
+        gameOverCanvas.SetActive(false); // Asegurar que el Canvas esté desactivado al iniciar
+        Cursor.lockState = CursorLockMode.Locked; // Ocultar el cursor al inicio
+        Cursor.visible = false; // Asegurar que el cursor no se vea
     }
 
     void Update()
     {
-        if (muerto) return; // Si est� muerto, no puede moverse
+        if (muerto) return; // Si está muerto, no puede moverse
 
-        // Comprobar si est� tocando el suelo
+        // Comprobar si está tocando el suelo
         isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0)
         {
@@ -60,7 +63,6 @@ public class PlayerMovement : MonoBehaviour
         // Aplicar gravedad
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
-        gameOverCanvas.SetActive(false); // Asegurar que GameOver est� oculto al iniciar
     }
 
     public void MatarJugador()
@@ -69,13 +71,33 @@ public class PlayerMovement : MonoBehaviour
 
         muerto = true;
         gameOverCanvas.SetActive(true); // Activar pantalla de Game Over
-        Debug.Log("�Has muerto! Game Over.");
-        gameOverCanvas.SetActive(true); // Mostrar Game Over
-        Time.timeScale = 0f; // Pausar el juego
+        Debug.Log("¡Has muerto! Game Over.");
+
+        // Pausar el tiempo
+        Time.timeScale = 0f;
+
+        // Mostrar el cursor para que el jugador pueda hacer clic
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // Desactivar el script de fotografía (si tienes uno)
+        if (cameraScript != null)
+        {
+            cameraScript.SetActive(false);
+        }
     }
+
     public void ReiniciarPartida()
     {
         Time.timeScale = 1f; // Reactivar el tiempo
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Recargar la escena actual
+        Cursor.lockState = CursorLockMode.Locked; // Bloquear el cursor nuevamente
+        Cursor.visible = false; // Ocultar el cursor
+
+        muerto = false; // Restablecer el estado del jugador
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Recargar la escena
     }
+
 }
+
+
