@@ -10,24 +10,27 @@ namespace Controller
     public class CreatureMover : MonoBehaviour
     {
         [Header("Movement")]
-        [SerializeField]
-        private float m_WalkSpeed = 1f;
-        [SerializeField]
-        private float m_RunSpeed = 4f;
-        [SerializeField, Range(0f, 360f)]
-        private float m_RotateSpeed = 90f;
-        [SerializeField]
-        private Space m_Space = Space.Self;
-        [SerializeField]
-        private float m_JumpHeight = 5f;
+        [SerializeField] private float m_WalkSpeed = 1f;
+        [SerializeField] private float m_RunSpeed = 4f;
+        [SerializeField, Range(0f, 360f)] private float m_RotateSpeed = 90f;
+        [SerializeField] private Space m_Space = Space.Self;
+        [SerializeField] private float m_JumpHeight = 5f;
 
         [Header("Animator")]
-        [SerializeField]
-        private string m_VerticalID = "Vert";
-        [SerializeField]
-        private string m_StateID = "State";
-        [SerializeField]
-        private LookWeight m_LookWeight = new(1f, 0.3f, 0.7f, 1f);
+        [SerializeField] private string m_VerticalID = "Vert";
+        [SerializeField] private string m_StateID = "State";
+        [SerializeField] private LookWeight m_LookWeight = new(1f, 0.3f, 0.7f, 1f);
+
+        // AUTO-MOVE SYSTEM
+        [SerializeField] private float m_IdleTimeMin = 2f;
+        [SerializeField] private float m_IdleTimeMax = 6f;
+        [SerializeField] private float m_MoveTimeMin = 3f;
+        [SerializeField] private float m_MoveTimeMax = 5f;
+
+        private float m_AutoTimer = 0f;
+        private bool m_AutoIsMoving = false;
+        private Vector2 m_AutoAxis;
+        private Vector3 m_AutoTarget;
 
         private Transform m_Transform;
         private CharacterController m_Controller;
@@ -66,8 +69,36 @@ namespace Controller
 
         private void Update()
         {
+            AutoMoveUpdate(Time.deltaTime);
+
             m_Movement.Move(Time.deltaTime, in m_Axis, in m_Target, m_IsRun, m_IsMoving, out var animAxis, out var isAir);
             m_Animation.Animate(in animAxis, m_IsRun ? 1f : 0f, Time.deltaTime);
+        }
+
+        private void AutoMoveUpdate(float deltaTime)
+        {
+            m_AutoTimer -= deltaTime;
+
+            if (m_AutoTimer <= 0f)
+            {
+                m_AutoIsMoving = !m_AutoIsMoving;
+
+                if (m_AutoIsMoving)
+                {
+                    Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
+                    m_AutoAxis = new Vector2(randomDir.x, randomDir.y).normalized;
+                    m_AutoTarget = transform.position + new Vector3(randomDir.x, 0f, randomDir.y) * 5f;
+
+                    m_AutoTimer = UnityEngine.Random.Range(m_MoveTimeMin, m_MoveTimeMax);
+                }
+                else
+                {
+                    m_AutoAxis = Vector2.zero;
+                    m_AutoTimer = UnityEngine.Random.Range(m_IdleTimeMin, m_IdleTimeMax);
+                }
+            }
+
+            SetInput(m_AutoAxis, m_AutoTarget, false, false);
         }
 
         private void OnAnimatorIK()
@@ -95,7 +126,7 @@ namespace Controller
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if(hit.normal.y > m_Controller.stepOffset)
+            if (hit.normal.y > m_Controller.stepOffset)
             {
                 m_Movement.SetSurface(hit.normal);
             }
@@ -173,7 +204,8 @@ namespace Controller
                 var targetForward = m_LastForward;
 
                 ConvertMovement(in axis, in cameraLook, out var movement);
-                if (movement.sqrMagnitude > 0.5f) {
+                if (movement.sqrMagnitude > 0.5f)
+                {
                     m_LastForward = Vector3.Normalize(movement);
                 }
 
@@ -234,7 +266,7 @@ namespace Controller
 
             private void GenAnimationAxis(in Vector3 movement, out Vector2 animAxis)
             {
-                if(m_Space == Space.Self)
+                if (m_Space == Space.Self)
                 {
                     animAxis = new Vector2(Vector3.Dot(movement, m_Transform.right), Vector3.Dot(movement, m_Transform.forward));
                 }
@@ -264,7 +296,7 @@ namespace Controller
 
             private void UpdateRotation(float deltaTime)
             {
-                if(!m_IsRotating)
+                if (!m_IsRotating)
                 {
                     return;
                 }
