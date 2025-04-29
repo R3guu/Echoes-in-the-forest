@@ -81916,7 +81916,7 @@ PrefabInstance:
       addedObject: {fileID: 519401248}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 519401247}
+      addedObject: {fileID: 519401249}
   m_SourcePrefab: {fileID: 100100000, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
 --- !u!1 &519401240 stripped
 GameObject:
@@ -81999,18 +81999,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1.6397982, z: 2.9891775}
   m_Center: {x: -0.00000003197914, y: 0.8020873, z: 0.13577199}
---- !u!114 &519401247
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519401240}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a4729d3d1967714e93a260211b5f72b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!82 &519401248
 AudioSource:
   m_ObjectHideFlags: 0
@@ -82107,6 +82095,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &519401249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519401240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8ad0fbd15190fb4785eb9d9259e935c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 418155433}
+  bearAudioSource: {fileID: 519401248}
+  maxDistance: 100
+  muteDistance: 20
 --- !u!1 &520852215
 GameObject:
   m_ObjectHideFlags: 0
