@@ -2,10 +2,9 @@ using UnityEngine;
 
 public class BearAudioAttenuation : MonoBehaviour
 {
-    [SerializeField] private Transform player;
-    [SerializeField] private AudioSource bearAudioSource;
-    [SerializeField] private float maxDistance = 100f;
-    [SerializeField] private float muteDistance = 20f;
+    [SerializeField] private Transform player;              // Referencia al jugador
+    [SerializeField] private AudioSource bearAudioSource;   // Fuente de audio del oso
+    [SerializeField] private float maxAudibleDistance = 20f; // Distancia máxima a la que se oye el oso
 
     private void Update()
     {
@@ -14,19 +13,8 @@ public class BearAudioAttenuation : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, player.position);
 
-        if (distance <= muteDistance)
-        {
-            bearAudioSource.volume = 0f;
-        }
-        else if (distance >= maxDistance)
-        {
-            bearAudioSource.volume = 1f;
-        }
-        else
-        {
-            // Volume decreases linearly from maxDistance to muteDistance
-            float t = (distance - muteDistance) / (maxDistance - muteDistance);
-            bearAudioSource.volume = Mathf.Clamp01(t);
-        }
+        // Volumen proporcional inverso: 1 cuando está cerca, 0 cuando está lejos
+        float volume = Mathf.Clamp01(1f - (distance / maxAudibleDistance));
+        bearAudioSource.volume = volume;
     }
 }

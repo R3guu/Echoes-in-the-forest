@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Gallina
   - Caballo
+  - Ciervo
   layers:
   - Default
   - TransparentFX
