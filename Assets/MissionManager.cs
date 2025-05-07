@@ -1,5 +1,7 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.Collections; // Para cambiar de escena y usar corutinas
 
 public class MissionManager : MonoBehaviour
 {
@@ -21,8 +23,7 @@ public class MissionManager : MonoBehaviour
             Debug.LogError("No se ha asignado un objeto Text en la UI.");
         }
 
-        // Mensaje inicial con controles e instrucciones
-        UpdateInstructions("Pulsa clic izquierdo para sacar una foto.\nPulsa E y usa las flechas para ver el ·lbum de fotos.\nAcÈrcate a la furgoneta para empezar tu misiÛn.");
+        UpdateInstructions("Pulsa clic izquierdo para sacar una foto.\nPulsa E y usa las flechas para ver el √°lbum de fotos.\nAc√©rcate a la furgoneta para empezar tu misi√≥n.");
     }
 
     void Update()
@@ -53,36 +54,47 @@ public class MissionManager : MonoBehaviour
 
     public void OnGallinaPhotoCaptured()
     {
-        if (!missionStarted) return; // Evita fotos antes de que inicie la misiÛn
+        if (!missionStarted) return;
 
-        Debug.Log("°La gallina apareciÛ en la foto!");
+        Debug.Log("¬°La gallina apareci√≥ en la foto!");
         gallinaPhotoTaken = true;
-        UpdateInstructions("°Foto de la gallina tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
+        UpdateInstructions("¬°Foto de la gallina tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
         waitingForDelivery = true;
     }
 
     public void OnCaballoPhotoCaptured()
     {
-        Debug.Log("°El caballo apareciÛ en la foto!");
+        Debug.Log("¬°El caballo apareci√≥ en la foto!");
         caballoPhotoTaken = true;
-        UpdateInstructions("°Foto del caballo tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
+        UpdateInstructions("¬°Foto del caballo tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
         waitingForDelivery = true;
     }
 
     public void OnCiervoPhotoCaptured()
     {
-        Debug.Log("°El ciervo apareciÛ en la foto!");
+        Debug.Log("¬°El ciervo apareci√≥ en la foto!");
         ciervoPhotoTaken = true;
-        UpdateInstructions("°Foto del ciervo tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
+        UpdateInstructions("¬°Foto del ciervo tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
         waitingForDelivery = true;
     }
 
     public void OnOsoPhotoCaptured()
     {
-        Debug.Log("°El oso apareciÛ en la foto!");
+        Debug.Log("¬°El oso apareci√≥ en la foto!");
         osoPhotoTaken = true;
-        UpdateInstructions("°Foto del oso tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
+        UpdateInstructions("¬°Foto del oso tomada! Vuelve a la furgoneta y pulsa 'T' para entregarla.");
         waitingForDelivery = true;
+
+        // üêª Hacer que el oso se vuelva tu amigo al tomar la foto
+        GameObject oso = GameObject.FindWithTag("Oso");
+        if (oso != null)
+        {
+            MovimentOso comportamientoOso = oso.GetComponent<MovimentOso>();
+            if (comportamientoOso != null)
+            {
+                comportamientoOso.HacerseAmigo();
+            }
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -94,11 +106,11 @@ public class MissionManager : MonoBehaviour
             if (!missionStarted)
             {
                 missionStarted = true;
-                UpdateInstructions("Tu primera misiÛn: Toma una foto de la gallina.");
+                UpdateInstructions("Tu primera misi√≥n: Toma una foto de la gallina.");
             }
             else if (waitingForDelivery)
             {
-                UpdateInstructions("Est·s cerca de la furgoneta. Pulsa 'T' para entregar la foto.");
+                UpdateInstructions("Est√°s cerca de la furgoneta. Pulsa 'T' para entregar la foto.");
             }
         }
     }
@@ -121,7 +133,7 @@ public class MissionManager : MonoBehaviour
         Debug.Log("Foto de la gallina entregada.");
         gallinaPhotoTaken = false;
         waitingForDelivery = false;
-        UpdateInstructions("MisiÛn de la gallina completada. Siguiente misiÛn: Toma una foto del caballo.");
+        UpdateInstructions("Misi√≥n de la gallina completada. Siguiente misi√≥n: Toma una foto del caballo.");
         StartNextMission("caballo");
     }
 
@@ -130,7 +142,7 @@ public class MissionManager : MonoBehaviour
         Debug.Log("Foto del caballo entregada.");
         caballoPhotoTaken = false;
         waitingForDelivery = false;
-        UpdateInstructions("MisiÛn del caballo completada. Siguiente misiÛn: Toma una foto del ciervo.");
+        UpdateInstructions("Misi√≥n del caballo completada. Siguiente misi√≥n: Toma una foto del ciervo.");
         StartNextMission("ciervo");
     }
 
@@ -139,7 +151,7 @@ public class MissionManager : MonoBehaviour
         Debug.Log("Foto del ciervo entregada.");
         ciervoPhotoTaken = false;
         waitingForDelivery = false;
-        UpdateInstructions("MisiÛn del ciervo completada. Siguiente misiÛn: Toma una foto del oso.");
+        UpdateInstructions("Misi√≥n del ciervo completada. Siguiente misi√≥n: Toma una foto del oso.");
         StartNextMission("oso");
     }
 
@@ -148,7 +160,17 @@ public class MissionManager : MonoBehaviour
         Debug.Log("Foto del oso entregada.");
         osoPhotoTaken = false;
         waitingForDelivery = false;
-        UpdateInstructions("MisiÛn del oso completada. °Felicidades, has terminado!");
+        UpdateInstructions("Misi√≥n del oso completada. ¬°Felicidades, has terminado!");
+
+        // üéâ Cambiar de escena despu√©s de una breve pausa
+        StartCoroutine(ChangeToWinScene());
+    }
+
+    private IEnumerator ChangeToWinScene()
+    {
+        yield return new WaitForSeconds(2f);
+        Debug.Log("cambio Scenewin");
+        SceneManager.LoadScene("SceneWin");
     }
 
     private void UpdateInstructions(string message)

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +9,8 @@ public class CapturePhoto : MonoBehaviour
     public Camera photoCamera;
     public GameObject camera;
     public GameObject visor;
+    public AudioSource cameraSound; // 🔊 Efecto de sonido
+
     private string directoryPath;
     private List<string> photoPaths = new List<string>();
     private int currentPhotoIndex = 0;
@@ -24,11 +26,10 @@ public class CapturePhoto : MonoBehaviour
 
     void Start()
     {
-        // Buscar y asignar el MissionManager
         missionManager = FindObjectOfType<MissionManager>();
         if (missionManager == null)
         {
-            Debug.LogError("No se encontr� el MissionManager.");
+            Debug.LogError("No se encontró el MissionManager.");
         }
 
         directoryPath = Path.Combine(Application.persistentDataPath, "Screenshots");
@@ -107,13 +108,19 @@ public class CapturePhoto : MonoBehaviour
         int uiVisorLayer = LayerMask.NameToLayer("UIVisor");
         photoCamera.cullingMask &= ~(1 << uiVisorLayer);
 
+        // 🔊 Reproducir sonido de cámara
+        if (cameraSound != null)
+        {
+            cameraSound.Play();
+        }
+
         yield return new WaitForEndOfFrame();
 
         string photoName = "Photo_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".png";
         string photoPath = Path.Combine(directoryPath, photoName);
 
         ScreenCapture.CaptureScreenshot(photoPath);
-        Debug.Log("�Foto tomada! Guardada en: " + photoPath);
+        Debug.Log("¡Foto tomada! Guardada en: " + photoPath);
 
         photoPaths.Add(photoPath);
         currentPhotoIndex = photoPaths.Count - 1;
@@ -146,7 +153,7 @@ public class CapturePhoto : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("No se encontr� la foto para cargarla en el visor.");
+            Debug.LogWarning("No se encontró la foto para cargarla en el visor.");
         }
     }
 }

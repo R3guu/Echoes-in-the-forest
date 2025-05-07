@@ -19,6 +19,8 @@ public class MovimentOso : MonoBehaviour
     private bool persiguiendo = false;
     private bool atacando = false;
 
+    private bool esAmigo = false; // NUEVO
+
     void Start()
     {
         ani = GetComponent<Animator>();
@@ -29,7 +31,7 @@ public class MovimentOso : MonoBehaviour
 
     public void Comportamiento_Enemigo()
     {
-        if (jugador == null || atacando) return; // No hacer nada si está atacando
+        if (jugador == null || atacando || esAmigo) return; // No hacer nada si es amigo
 
         float distanciaJugador = Vector3.Distance(transform.position, jugador.position);
 
@@ -107,6 +109,8 @@ public class MovimentOso : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        if (esAmigo) return; // Si ya es amigo, ignorar colisiones
+
         if (other.CompareTag("Player") && !atacando)
         {
             StartCoroutine(AtacarJugador(other.gameObject));
@@ -118,14 +122,14 @@ public class MovimentOso : MonoBehaviour
         atacando = true;
         ani.SetBool("Run Forward", false);
 
-        int ataqueAleatorio = Random.Range(1, 9); // Entre 1 y 8
+        int ataqueAleatorio = Random.Range(1, 9);
         ani.SetTrigger("Attack" + ataqueAleatorio);
 
-        yield return new WaitForSeconds(1.5f); // Tiempo de la animación
+        yield return new WaitForSeconds(1.5f);
 
-        if (player != null) // Verificar si el jugador sigue vivo
+        if (player != null)
         {
-            player.GetComponent<PlayerMovement>().MatarJugador(); // Llamar la función de muerte del jugador
+            player.GetComponent<PlayerMovement>().MatarJugador();
         }
 
         atacando = false;
@@ -133,6 +137,18 @@ public class MovimentOso : MonoBehaviour
 
     void Update()
     {
-        Comportamiento_Enemigo();
+        if (!esAmigo)
+        {
+            Comportamiento_Enemigo();
+        }
+    }
+
+    // NUEVA FUNCIÓN PARA HACERLO AMIGO
+    public void HacerseAmigo()
+    {
+        esAmigo = true;
+        ani.SetBool("Run Forward", false);
+        ani.SetBool("Idle", true); // O puedes poner una animación amistosa si tienes una
+        Debug.Log("¡El oso se ha hecho tu amigo!");
     }
 }
