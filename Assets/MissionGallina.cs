@@ -3,39 +3,39 @@ using UnityEngine.UI;
 
 public class MissionGallina : MonoBehaviour
 {
-    public GameObject missionUI; // Panel de la lista de misiones
-    public Text missionText; // Texto de la misión
+    public GameObject missionUI;
+    public Text missionText;
     private bool missionActive = false;
     private bool gallinaPhotoTaken = false;
     private bool canDeliverPhoto = false;
 
-    private MissionCaballo missionCaballo; // Referencia a la misión del caballo
+    private MissionCaballo missionCaballo;
 
     void Start()
     {
         missionUI.SetActive(false);
         missionText.text = "";
-        missionCaballo = FindObjectOfType<MissionCaballo>(); // Encuentra la misión del caballo
+        missionCaballo = FindObjectOfType<MissionCaballo>();
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            if (!missionActive)
+            if (missionActive && gallinaPhotoTaken && !canDeliverPhoto)
+            {
+                canDeliverPhoto = true;
+                missionText.text = "Pulsa T para entregar la foto de la gallina.";
+            }
+            else if (canDeliverPhoto && Input.GetKeyDown(KeyCode.T))
+            {
+                DeliverGallinaPhoto();
+            }
+            else if (!missionActive)
             {
                 missionActive = true;
                 missionUI.SetActive(true);
                 missionText.text = "Misión: Captura una foto de la gallina.";
-            }
-            else if (gallinaPhotoTaken && !canDeliverPhoto)
-            {
-                canDeliverPhoto = true;
-                missionText.text = "Pulsa T para entregar la foto.";
-            }
-            else if (canDeliverPhoto && !gallinaPhotoTaken)
-            {
-                missionText.text = "¡Esperando la foto del caballo!";
             }
         }
     }
@@ -59,16 +59,13 @@ public class MissionGallina : MonoBehaviour
 
     void DeliverGallinaPhoto()
     {
-        missionText.text = "¡Foto entregada!";
+        missionText.text = "¡Foto entregada hola!";
         canDeliverPhoto = false;
 
-        // Activar la misión del caballo
-        missionCaballo.StartMission(); // Inicia la misión del caballo
-        Invoke("HideMissionUI", 3f);
-    }
-
-    void HideMissionUI()
-    {
-        missionUI.SetActive(true);
+        // Iniciar la misión del caballo
+        if (missionCaballo != null)
+        {
+            missionCaballo.StartMission();
+        }
     }
 }

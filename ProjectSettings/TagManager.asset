@@ -7,6 +7,8 @@ TagManager:
   - Gallina
   - Caballo
   - Ciervo
+  - Oso
+  - Van
   layers:
   - Default
   - TransparentFX

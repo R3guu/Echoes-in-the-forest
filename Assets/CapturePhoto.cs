@@ -13,17 +13,23 @@ public class CapturePhoto : MonoBehaviour
     private List<string> photoPaths = new List<string>();
     private int currentPhotoIndex = 0;
     private bool isAlbumMode = false;
-    private MissionGallina missionGallina;
-    private MissionCaballo missionCaballo;
+
+    private MissionManager missionManager;
 
     public float detectionRange = 50f;
     private bool gallinaDetectedThisFrame = false;
-    private bool caballoDetectedThisFrame = false; // <-- nuevo flag para el caballo
+    private bool caballoDetectedThisFrame = false;
+    private bool ciervoDetectedThisFrame = false;
+    private bool osoDetectedThisFrame = false;
 
     void Start()
     {
-        missionGallina = FindObjectOfType<MissionGallina>();
-        missionCaballo = FindObjectOfType<MissionCaballo>(); // <-- buscar misión del caballo
+        // Buscar y asignar el MissionManager
+        missionManager = FindObjectOfType<MissionManager>();
+        if (missionManager == null)
+        {
+            Debug.LogError("No se encontró el MissionManager.");
+        }
 
         directoryPath = Path.Combine(Application.persistentDataPath, "Screenshots");
         if (!Directory.Exists(directoryPath))
@@ -41,7 +47,23 @@ public class CapturePhoto : MonoBehaviour
             SetMode(!isAlbumMode);
         }
 
-        if (!isAlbumMode)
+        if (isAlbumMode)
+        {
+            if (photoPaths.Count > 0)
+            {
+                if (Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    currentPhotoIndex = (currentPhotoIndex + 1) % photoPaths.Count;
+                    UpdatePhotoPlane(photoPaths[currentPhotoIndex]);
+                }
+                else if (Input.GetKeyDown(KeyCode.LeftArrow))
+                {
+                    currentPhotoIndex = (currentPhotoIndex - 1 + photoPaths.Count) % photoPaths.Count;
+                    UpdatePhotoPlane(photoPaths[currentPhotoIndex]);
+                }
+            }
+        }
+        else
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -49,18 +71,9 @@ public class CapturePhoto : MonoBehaviour
             }
 
             DetectGallina();
-            DetectCaballo(); // <-- detectar caballo también
-        }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                ShowNextPhoto();
-            }
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                ShowPreviousPhoto();
-            }
+            DetectCaballo();
+            DetectCiervo();
+            DetectOso();
         }
     }
 
@@ -69,43 +82,27 @@ public class CapturePhoto : MonoBehaviour
         isAlbumMode = albumMode;
         camera.SetActive(!albumMode);
         visor.SetActive(albumMode);
-    }
 
-    private void DetectGallina()
-    {
-        RaycastHit hit;
-        Ray ray = photoCamera.ScreenPointToRay(new Vector3(photoCamera.pixelWidth / 2, photoCamera.pixelHeight / 2, 0));
-
-        if (Physics.Raycast(ray, out hit, detectionRange))
+        if (isAlbumMode && photoPaths.Count > 0)
         {
-            gallinaDetectedThisFrame = hit.collider.CompareTag("Gallina");
-        }
-        else
-        {
-            gallinaDetectedThisFrame = false;
+            currentPhotoIndex = 0;
+            UpdatePhotoPlane(photoPaths[currentPhotoIndex]);
         }
     }
 
-    // NUEVA FUNCIÓN: Detectar Caballo
-    private void DetectCaballo()
-    {
-        RaycastHit hit;
-        Ray ray = photoCamera.ScreenPointToRay(new Vector3(photoCamera.pixelWidth / 2, photoCamera.pixelHeight / 2, 0));
+    private void DetectGallina() => gallinaDetectedThisFrame = RaycastTag("Gallina");
+    private void DetectCaballo() => caballoDetectedThisFrame = RaycastTag("Caballo");
+    private void DetectCiervo() => ciervoDetectedThisFrame = RaycastTag("Ciervo");
+    private void DetectOso() => osoDetectedThisFrame = RaycastTag("Oso");
 
-        if (Physics.Raycast(ray, out hit, detectionRange))
-        {
-            caballoDetectedThisFrame = hit.collider.CompareTag("Caballo");
-        }
-        else
-        {
-            caballoDetectedThisFrame = false;
-        }
+    private bool RaycastTag(string tag)
+    {
+        Ray ray = photoCamera.ScreenPointToRay(new Vector3(photoCamera.pixelWidth / 2, photoCamera.pixelHeight / 2, 0));
+        return Physics.Raycast(ray, out RaycastHit hit, detectionRange) && hit.collider.CompareTag(tag);
     }
 
     private IEnumerator TakeScreenshot()
     {
-        if (isAlbumMode) yield break;
-
         int originalCullingMask = photoCamera.cullingMask;
         int uiVisorLayer = LayerMask.NameToLayer("UIVisor");
         photoCamera.cullingMask &= ~(1 << uiVisorLayer);
@@ -116,7 +113,6 @@ public class CapturePhoto : MonoBehaviour
         string photoPath = Path.Combine(directoryPath, photoName);
 
         ScreenCapture.CaptureScreenshot(photoPath);
-
         Debug.Log("¡Foto tomada! Guardada en: " + photoPath);
 
         photoPaths.Add(photoPath);
@@ -127,17 +123,15 @@ public class CapturePhoto : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         UpdatePhotoPlane(photoPath);
 
+        // Llamar al MissionManager para procesar la foto tomada
         if (gallinaDetectedThisFrame)
-        {
-            Debug.Log("¡La gallina apareció en la foto!");
-            missionGallina?.GallinaPhotoCaptured();
-        }
-
+            missionManager.OnGallinaPhotoCaptured();
         if (caballoDetectedThisFrame)
-        {
-            Debug.Log("¡El caballo apareció en la foto!");
-            missionCaballo?.CaballoPhotoCaptured(); // <-- nueva notificación
-        }
+            missionManager.OnCaballoPhotoCaptured();
+        if (ciervoDetectedThisFrame)
+            missionManager.OnCiervoPhotoCaptured();
+        if (osoDetectedThisFrame)
+            missionManager.OnOsoPhotoCaptured();
     }
 
     private void UpdatePhotoPlane(string photoPath)
@@ -148,29 +142,11 @@ public class CapturePhoto : MonoBehaviour
             Texture2D photoTexture = new Texture2D(2, 2);
             photoTexture.LoadImage(photoBytes);
             photoPlane.material.mainTexture = photoTexture;
-            Debug.Log("Foto cargada en el plano.");
+            Debug.Log("Foto cargada en el visor.");
         }
         else
         {
-            Debug.LogWarning("No se encontró la foto para cargarla en el plano.");
-        }
-    }
-
-    private void ShowNextPhoto()
-    {
-        if (photoPaths.Count > 0)
-        {
-            currentPhotoIndex = (currentPhotoIndex + 1) % photoPaths.Count;
-            UpdatePhotoPlane(photoPaths[currentPhotoIndex]);
-        }
-    }
-
-    private void ShowPreviousPhoto()
-    {
-        if (photoPaths.Count > 0)
-        {
-            currentPhotoIndex = (currentPhotoIndex - 1 + photoPaths.Count) % photoPaths.Count;
-            UpdatePhotoPlane(photoPaths[currentPhotoIndex]);
+            Debug.LogWarning("No se encontró la foto para cargarla en el visor.");
         }
     }
 }

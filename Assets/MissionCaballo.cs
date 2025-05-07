@@ -5,9 +5,10 @@ public class MissionCaballo : MonoBehaviour
 {
     public GameObject missionUI;
     public Text missionText;
+    public MissionCiervo missionCiervo;
+
     private bool missionActive = false;
     private bool caballoPhotoTaken = false;
-    private bool canDeliverCaballoPhoto = false;
 
     void Start()
     {
@@ -34,15 +35,31 @@ public class MissionCaballo : MonoBehaviour
         }
     }
 
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            if (missionActive && caballoPhotoTaken)
+            {
+                missionText.text = "Pulsa T para entregar la foto del caballo.";
+            }
+            else if (Input.GetKeyDown(KeyCode.T) && caballoPhotoTaken)
+            {
+                // Ahora aseguramos que solo se llame a CompleteMission
+                CompleteMission();
+            }
+        }
+    }
+
     public void CompleteMission()
     {
         missionText.text = "¡Misión completada! ¡Foto del caballo entregada!";
         missionActive = false;
-        Invoke("HideMissionUI", 3f);
-    }
 
-    void HideMissionUI()
-    {
-        missionUI.SetActive(false);
+        // Inicia automáticamente la misión del ciervo
+        if (missionCiervo != null)
+        {
+            missionCiervo.StartMission();
+        }
     }
 }
