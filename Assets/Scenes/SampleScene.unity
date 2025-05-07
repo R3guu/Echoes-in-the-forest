@@ -66322,7 +66322,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
-  sprintSpeed: 25
+  sprintSpeed: 11
   gravity: -9.81
   jumpHeight: 2
   gameOverCanvas: {fileID: 681595760}
