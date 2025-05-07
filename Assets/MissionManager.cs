@@ -106,7 +106,7 @@ public class MissionManager : MonoBehaviour
             if (!missionStarted)
             {
                 missionStarted = true;
-                UpdateInstructions("Tu primera misión: Toma una foto de la gallina.");
+                UpdateInstructions("Objetivo: ¡Captura una foto de una gallina junto a la casa!");
             }
             else if (waitingForDelivery)
             {
@@ -133,7 +133,7 @@ public class MissionManager : MonoBehaviour
         Debug.Log("Foto de la gallina entregada.");
         gallinaPhotoTaken = false;
         waitingForDelivery = false;
-        UpdateInstructions("Misión de la gallina completada. Siguiente misión: Toma una foto del caballo.");
+        UpdateInstructions("Objetivo: Más allá encontrarás unos caballos llenos de energía.\r\n\r\n¡A ver si puedes conseguir hacerles una buena foto!");
         StartNextMission("caballo");
     }
 
@@ -142,7 +142,7 @@ public class MissionManager : MonoBehaviour
         Debug.Log("Foto del caballo entregada.");
         caballoPhotoTaken = false;
         waitingForDelivery = false;
-        UpdateInstructions("Misión del caballo completada. Siguiente misión: Toma una foto del ciervo.");
+        UpdateInstructions("Objetivo: Ahora busca unos ciervos a lo lejos, vigila que corren mucho!");
         StartNextMission("ciervo");
     }
 
@@ -151,7 +151,7 @@ public class MissionManager : MonoBehaviour
         Debug.Log("Foto del ciervo entregada.");
         ciervoPhotoTaken = false;
         waitingForDelivery = false;
-        UpdateInstructions("Misión del ciervo completada. Siguiente misión: Toma una foto del oso.");
+        UpdateInstructions("Objetivo: Saca una foto a Sombra y conseguiras hacerte su amigo!");
         StartNextMission("oso");
     }
 
@@ -185,15 +185,15 @@ public class MissionManager : MonoBehaviour
     {
         if (animal == "caballo")
         {
-            UpdateInstructions("Toma una foto del caballo.");
+            UpdateInstructions("Objetivo: Más allá encontrarás unos caballos llenos de energía.\r\n\r\n¡A ver si puedes conseguir hacerles una buena foto!");
         }
         else if (animal == "ciervo")
         {
-            UpdateInstructions("Toma una foto del ciervo.");
+            UpdateInstructions("Objetivo: Ahora busca unos ciervos a lo lejos, vigila que corren mucho!");
         }
         else if (animal == "oso")
         {
-            UpdateInstructions("Toma una foto del oso.");
+            UpdateInstructions("Objetivo: Saca una foto a Sombra y conseguiras hacerte su amigo!");
         }
     }
 }

@@ -15,6 +15,10 @@ public class TextoWin : MonoBehaviour
 
     void Start()
     {
+        // Mostrar y desbloquear el cursor
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         StartCoroutine(Reloj());
     }
 

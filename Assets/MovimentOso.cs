@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,7 +19,7 @@ public class MovimentOso : MonoBehaviour
     private bool persiguiendo = false;
     private bool atacando = false;
 
-    private bool esAmigo = false; // NUEVO
+    private bool esAmigo = false;
 
     void Start()
     {
@@ -31,7 +31,15 @@ public class MovimentOso : MonoBehaviour
 
     public void Comportamiento_Enemigo()
     {
-        if (jugador == null || atacando || esAmigo) return; // No hacer nada si es amigo
+        if (jugador == null || atacando)
+            return;
+
+        if (esAmigo)
+        {
+            // Si es amigo, sigue patrullando normalmente
+            Patrullar();
+            return;
+        }
 
         float distanciaJugador = Vector3.Distance(transform.position, jugador.position);
 
@@ -109,7 +117,7 @@ public class MovimentOso : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (esAmigo) return; // Si ya es amigo, ignorar colisiones
+        if (esAmigo) return; // Si es amigo, no ataca ni hace nada
 
         if (other.CompareTag("Player") && !atacando)
         {
@@ -137,18 +145,16 @@ public class MovimentOso : MonoBehaviour
 
     void Update()
     {
-        if (!esAmigo)
-        {
-            Comportamiento_Enemigo();
-        }
+        Comportamiento_Enemigo(); // Siempre ejecuta el comportamiento (ahora tambiÃ©n patrulla si es amigo)
     }
 
-    // NUEVA FUNCIÓN PARA HACERLO AMIGO
     public void HacerseAmigo()
     {
         esAmigo = true;
+        atacando = false;
+        velocidad = 1f; // ðŸ‘ˆ Asegura que patrulle a velocidad normal
         ani.SetBool("Run Forward", false);
-        ani.SetBool("Idle", true); // O puedes poner una animación amistosa si tienes una
-        Debug.Log("¡El oso se ha hecho tu amigo!");
+        ani.SetBool("Idle", true);
+        Debug.Log("Â¡El oso se ha hecho tu amigo!");
     }
 }
